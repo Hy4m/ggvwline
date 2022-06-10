@@ -1,7 +1,6 @@
 #' @title Brush X-spline Curve Layer
 #' @description Layer function to sweep an X-spline curve with a brush.
-#' @param w width of X-spline, should be created with \code{widthSpline} or
-#' \code{BezierWidth()}.
+#' @param width_units unit of width.
 #' @param brush a description of a brush shape.
 #' @param shape a numeric value (or one per location) that controls the shape
 #' of the X-spline curve relative to the locations.
@@ -12,6 +11,7 @@
 #' @param spacing a numeric vector or unit describing where the brush will be
 #' placed along the main curve.
 #' @param d,rep passing to \code{widthSpline}.
+#' @param by_x logical, if TRUE will calculate the width based on x-axis.
 #' @inheritParams ggplot2::layer
 #' @inheritParams ggplot2::geom_polygon
 #' @section Aesthetics:
@@ -35,20 +35,21 @@ geom_brush_xspline <- function(mapping = NULL,
                                stat = "identity",
                                position = "identity",
                                ...,
-                               w = NULL,
                                brush = verticalBrush,
+                               width_units = "mm",
                                shape = 1,
                                angle = "perp",
                                open = TRUE,
                                spacing = NULL,
                                d = NULL,
                                rep = FALSE,
+                               by_x = FALSE,
                                na.rm = FALSE,
                                show.legend = NA,
                                inherit.aes = TRUE) {
   params <- list(...)
-  if(length(params) > 0) {
-    params <- params[setdiff(names(params), c("unit", "scale"))]
+  if("width" %in% names(params)) {
+    params <- rename(params, w = "width")
   }
 
   layer(
@@ -60,7 +61,7 @@ geom_brush_xspline <- function(mapping = NULL,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     params = c(list(
-      w = w,
+      width_units = width_units,
       brush = brush,
       shape = shape,
       angle = angle,
@@ -68,6 +69,7 @@ geom_brush_xspline <- function(mapping = NULL,
       spacing = spacing,
       d = d,
       rep = rep,
+      by_x = by_x,
       na.rm = na.rm
     ), params)
   )
@@ -90,18 +92,22 @@ GeomBrushXspline <- ggproto(
   draw_panel = function(self, data, panel_params, coord, w = NULL,
                         brush = verticalBrush, shape = 1, angle = "perp",
                         open = TRUE, spacing = NULL, d = NULL, rep = FALSE,
-                        unit = "mm", scale = 1, na.rm = FALSE) {
+                        width_units = "mm", by_x = FALSE, na.rm = FALSE) {
     if(empty(data) || nrow(data) < 2) {
       return(ggplot2::zeroGrob())
     }
 
-    if(!is.null(w)) {
-      if(!inherits(w, "widthSpline") && inherits(w, "BezierWidth")) {
-        stop("'w' should be created with `widthSpline()` or `BezierWidth()`.", call. = FALSE)
-      }
-      width <- rescale_width(w, scale = scale)
+    if (is.null(w)) {
+      w <- widthSpline(data$width, default.units = width_units, shape = shape,
+                       d = d, rep = rep)
+    }
+    if(!inherits(w, "widthSpline") && inherits(w, "BezierWidth")) {
+      stop("'width' should be created with `widthSpline()` or `BezierWidth()`.", call. = FALSE)
+    }
+    if (isTRUE(by_x)) {
+      width <- reset_width(w, diff(panel_params$x.range))
     } else {
-      width <- widthSpline(data$width / scale, unit, d = d, rep = rep)
+      width <- reset_width(w, diff(panel_params$y.range))
     }
 
     coords <- coord$transform(data, panel_params)

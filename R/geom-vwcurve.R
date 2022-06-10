@@ -1,5 +1,6 @@
 #' @title Variable-Width Curve Layer
 #' @description Layer function draw a variable-width line.
+#' @param width_units unit of width.
 #' @param open a boolean indicating whether to connect the last location back
 #' to the first location to produce a closed line.
 #' @param angle either "perp" or a numeric value describing a fixed orientation
@@ -8,6 +9,7 @@
 #' "square", or "extend".
 #' @param mitrelimit a numeric that controls when a mitre join is converted to
 #' a bevel join or a mitre ending is converted to a square ending.
+#' @param by_x logical, if TRUE will calculate the width based on x-axis.
 #' @inheritParams ggplot2::layer
 #' @inheritParams ggplot2::geom_polygon
 #' @section Aesthetics:
@@ -33,16 +35,18 @@ geom_vwcurve <- function(mapping = NULL,
                          stat = "identity",
                          position = "identity",
                          ...,
+                         width_units = "mm",
                          open = TRUE,
                          angle = "perp",
                          lineend = "butt",
                          mitrelimit = 4,
+                         by_x = FALSE,
                          na.rm = FALSE,
                          show.legend = NA,
                          inherit.aes = TRUE) {
   params <- list(...)
-  if(length(params) > 0) {
-    params <- params[setdiff(names(params), c("unit", "scale"))]
+  if("width" %in% names(params)) {
+    params <- rename(params, w = "width")
   }
 
   layer(
@@ -54,10 +58,12 @@ geom_vwcurve <- function(mapping = NULL,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     params = c(list(
+      width_units = width_units,
       open = open,
       angle = angle,
       lineend = lineend,
       mitrelimit = mitrelimit,
+      by_x = by_x,
       na.rm = na.rm
     ), params)
   )
@@ -79,12 +85,20 @@ GeomVwcurve <- ggproto(
 
   draw_panel = function(self, data, panel_params, coord, open = TRUE,
                         angle = "perp", lineend = "butt", mitrelimit = 4,
-                        unit = "mm", scale = 1, na.rm = FALSE) {
+                        width_unit = "mm", by_x = FALSE, na.rm = FALSE) {
     if(empty(data) || nrow(data) < 2) {
       return(ggplot2::zeroGrob())
     }
 
-    width <- unit(data$width / scale, units = unit)
+    if (is.null(w)) {
+      w <- unit(data$width, units = width_units)
+    }
+
+    if (isTRUE(by_x)) {
+      width <- reset_width(w, diff(panel_params$x.range))
+    } else {
+      width <- reset_width(w, diff(panel_params$y.range))
+    }
 
     coords <- coord$transform(data, panel_params)
     first_row <- coords[1, , drop = FALSE]

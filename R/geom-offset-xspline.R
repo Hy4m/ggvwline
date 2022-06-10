@@ -1,6 +1,6 @@
 #' @title X-spline Offset Curve Layer
 #' @description Layer funtion to draw an X-spline offset curve.
-#' @param w width of curve, should be created with \code{widthSpline()}.
+#' @param width_units unit of width.
 #' @param shape a numeric value (or one per location) that controls the shape
 #' of the X-spline curve relative to the locations.
 #' @param open a boolean indicating whether to connect the last location back
@@ -12,7 +12,8 @@
 #' "square", or "extend".
 #' @param mitrelimit a numeric that controls when a mitre join is converted to
 #' a bevel join or a mitre ending is converted to a square ending.
-#' @param d,wshape,rep passing to \code{widthSpline}.
+#' @param d,rep passing to \code{widthSpline}.
+#' @param by_x logical, if TRUE will calculate the width based on x-axis.
 #' @inheritParams ggplot2::layer
 #' @inheritParams ggplot2::geom_polygon
 #' @section Aesthetics:
@@ -36,21 +37,21 @@ geom_offset_xspline <- function(mapping = NULL,
                                 stat = "identity",
                                 position = "identity",
                                 ...,
-                                w = NULL,
-                                shape = 1,
+                                width_units = "mm",
+                                shape = -1,
                                 open = TRUE,
                                 repEnds = TRUE,
                                 lineend = "butt",
                                 mitrelimit = 4,
                                 d = NULL,
-                                wshape = -1,
                                 rep = FALSE,
+                                by_x = FALSE,
                                 na.rm = FALSE,
                                 show.legend = NA,
                                 inherit.aes = TRUE) {
   params <- list(...)
-  if(length(params) > 0) {
-    params <- params[setdiff(names(params), c("unit", "scale"))]
+  if("width" %in% names(params)) {
+    params <- rename(params, w = "width")
   }
 
   layer(
@@ -62,15 +63,15 @@ geom_offset_xspline <- function(mapping = NULL,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     params = c(list(
-      w = w,
+      width_units = width_units,
       shape = shape,
       open = open,
       repEnds = repEnds,
       lineend = lineend,
       mitrelimit = mitrelimit,
       d = d,
-      wshape = wshape,
       rep = rep,
+      by_x = by_x,
       na.rm = na.rm
     ), params)
   )
@@ -90,22 +91,25 @@ GeomOffsetXspline <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
-  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = 1,
-                        open = TRUE, repEnds = TRUE, lineend = "butt", mitrelimit = 4,
-                        unit = "mm", d = NULL, wshape = -1, rep = FALSE,
-                        scale = 1, na.rm = FALSE) {
+  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = -1,
+                        open = TRUE, repEnds = TRUE, lineend = "butt",
+                        mitrelimit = 4, d = NULL, rep = FALSE,
+                        width_units = "mm", na.rm = FALSE) {
     if(empty(data) || nrow(data) < 2) {
       return(ggplot2::zeroGrob())
     }
 
-    if(!is.null(w)) {
-      if(!inherits(w, "widthSpline")) {
-        stop("'w' should be created with `widthSpline()`.", call. = FALSE)
-      }
-      width <- rescale_width(w, scale = scale)
+    if (is.null(w)) {
+      w <- widthSpline(data$width, default.units = width_units, shape = shape,
+                       d = d, rep = rep)
+    }
+    if(!inherits(w, "widthSpline")) {
+      stop("'width' should be created with `widthSpline()`.", call. = FALSE)
+    }
+    if (isTRUE(by_x)) {
+      width <- reset_width(w, diff(panel_params$x.range))
     } else {
-      width <- widthSpline(data$width / scale, unit, d = d,
-                           shape = wshape, rep = rep)
+      width <- reset_width(w, diff(panel_params$y.range))
     }
 
     coords <- coord$transform(data, panel_params)

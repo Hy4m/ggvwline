@@ -1,6 +1,6 @@
 #' @title Variable-Width Line Layer
 #' @description Layer function to draw variable-width line.
-#' @param w width of variable-width line, should be created with \code{widthSpec}.
+#' @param width_units unit of width.
 #' @param open a boolean indicating whether to connect the last location back
 #' to the first location to produce a closed line.
 #' @param linejoin the line join style; one of "round", "mitre", or "bevel"..
@@ -10,6 +10,7 @@
 #' a bevel join or a mitre ending is converted to a square ending.
 #' @param stepWidth a logical indicating whether widths are fixed along the
 #' length of a segment.
+#' @param by_x logical, if TRUE will calculate the width based on x-axis.
 #' @inheritParams ggplot2::layer
 #' @inheritParams ggplot2::geom_polygon
 #' @section Aesthetics:
@@ -41,18 +42,19 @@ geom_vwline <- function(mapping = NULL,
                         stat = "identity",
                         position = "identity",
                         ...,
-                        w = NULL,
+                        width_units = NULL,
                         open = TRUE,
                         linejoin = "round",
                         lineend = "butt",
                         mitrelimit = 4,
                         stepWidth = FALSE,
+                        by_x = FALSE,
                         na.rm = FALSE,
                         show.legend = NA,
                         inherit.aes = TRUE) {
   params <- list(...)
-  if(length(params) > 0) {
-    params <- params[setdiff(names(params), c("unit", "scale"))]
+  if("width" %in% names(params)) {
+    params <- rename(params, w = "width")
   }
 
   layer(
@@ -64,12 +66,13 @@ geom_vwline <- function(mapping = NULL,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     params = c(list(
-      w = w,
+      width_units = width_units,
       open = open,
       linejoin = linejoin,
       lineend = lineend,
       mitrelimit = mitrelimit,
       stepWidth = stepWidth,
+      by_x = by_x,
       na.rm = na.rm
     ), params)
   )
@@ -82,8 +85,8 @@ geom_vwline <- function(mapping = NULL,
 GeomVwline <- ggproto(
   "GeomVwline", Geom,
   default_aes = aes(width    = 5,
-                    left     = NULL,
-                    right    = NULL,
+                    left     = NA,
+                    right    = NA,
                     alpha    = NA,
                     colour   = "grey35",
                     fill     = "grey60",
@@ -93,21 +96,27 @@ GeomVwline <- ggproto(
 
   draw_panel = function(self, data, panel_params, coord, w = NULL, open = TRUE,
                         linejoin = "round", lineend = "butt", mitrelimit = 4,
-                        stepWidth = FALSE, unit = "mm", scale = 1, na.rm = FALSE) {
+                        stepWidth = FALSE, width_units = "mm", by_x = FALSE,
+                        na.rm = FALSE) {
     if(empty(data) || nrow(data) < 2) {
       return(ggplot2::zeroGrob())
     }
 
-    if(!is.null(w)) {
-      if(!inherits(w, "widthSpec")) {
-        stop("'w' should be created with `widthSpec()`.", call. = FALSE)
+    if (is.null(w)) {
+      if(!all(is.na(data$left)) && !all(is.na(data$left))) {
+        width <- widthSpec(list(left = data$left, right = data$right),
+                           default.units = width_units)
+      } else {
+        width <- widthSpec(data$width, default.units = width_units)
       }
-      width <- rescale_width(w, scale = scale)
-    } else if(!is.null(data$left) && !is.null(data$right)) {
-      width <- widthSpec(list(left = data$left / scale,
-                              right = data$right / scale), unit)
+    }
+    if(!inherits(w, "widthSpec")) {
+      stop("'width' should be created with `widthSpec()`.", call. = FALSE)
+    }
+    if (isTRUE(by_x)) {
+      width <- reset_width(w, diff(panel_params$x.range))
     } else {
-      width <- widthSpec(data$width / scale, unit)
+      width <- reset_width(w, diff(panel_params$y.range))
     }
 
     coords <- coord$transform(data, panel_params)

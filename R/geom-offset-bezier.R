@@ -1,7 +1,6 @@
 #' @title Bezier Offset Curve Layer
 #' @description Layer function to draw a bezier offset curve.
-#' @param w width of Bezier-offset curve, should be created with
-#' \code{widthSpline} or \code{BezierWidth()}.
+#' @param width_units unit of width.
 #' @param stepFn function called to generate steps in t when rendering.
 #' @param open a boolean indicating whether to connect the last location back
 #' to the first location to produce a closed line.
@@ -12,6 +11,7 @@
 #' @param mitrelimit a numeric that controls when a mitre join is converted to
 #' a bevel join or a mitre ending is converted to a square ending.
 #' @param d,rep passing to \code{widthSpline}.
+#' @param by_x logical, if TRUE will calculate the width based on x-axis.
 #' @inheritParams ggplot2::layer
 #' @inheritParams ggplot2::geom_polygon
 #' @section Aesthetics:
@@ -36,7 +36,7 @@ geom_offset_bezier <- function(mapping = NULL,
                                stat = "identity",
                                position = "identity",
                                ...,
-                               w = NULL,
+                               width_units = "mm",
                                stepFn = nSteps(100),
                                open = TRUE,
                                lineend = "butt",
@@ -44,12 +44,13 @@ geom_offset_bezier <- function(mapping = NULL,
                                mitrelimit = 4,
                                d = NULL,
                                rep = FALSE,
+                               by_x = FALSE,
                                na.rm = FALSE,
                                show.legend = NA,
                                inherit.aes = TRUE) {
   params <- list(...)
-  if(length(params) > 0) {
-    params <- params[setdiff(names(params), c("unit", "scale"))]
+  if("width" %in% names(params)) {
+    params <- rename(params, w = "width")
   }
 
   layer(
@@ -61,7 +62,7 @@ geom_offset_bezier <- function(mapping = NULL,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     params = c(list(
-      w = w,
+      width_units = width_units,
       stepFn = stepFn,
       open = open,
       lineend = lineend,
@@ -69,6 +70,7 @@ geom_offset_bezier <- function(mapping = NULL,
       mitrelimit = mitrelimit,
       d = d,
       rep = rep,
+      by_x = by_x,
       na.rm = na.rm
     ), params)
   )
@@ -88,22 +90,26 @@ GeomOffsetBezier <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
-  draw_panel = function(self, data, panel_params, coord, w = NULL,
+  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = 1,
                         stepFn = nSteps(100), open = TRUE, lineend = "butt",
-                        linejoin = "round", mitrelimit = 4, unit = "mm",
-                        d = NULL, rep = FALSE, scale = 1, na.rm = FALSE) {
+                        linejoin = "round", mitrelimit = 4, width_units = "mm",
+                        d = NULL, rep = FALSE, by_x = FALSE, na.rm = FALSE) {
     if(empty(data) || nrow(data) < 4) {
       return(ggplot2::zeroGrob())
     }
 
-    if(!is.null(w)) {
-      if(!inherits(w, "widthSpline") || !inherits(w, "BezierWidth")) {
-        stop("'w' should be created with `widthSpline()` or `BezierWidth()`.",
-             call. = FALSE)
-      }
-      width <- rescale_width(w, scale = scale)
+    if (is.null(w)) {
+      w <- widthSpline(data$width, default.units = width_units, shape = shape,
+                       d = d, rep = rep)
+    }
+    if(!inherits(w, "widthSpline") || !inherits(w, "BezierWidth")) {
+      stop("'width' should be created with `widthSpline()` or `BezierWidth()`.",
+           call. = FALSE)
+    }
+    if (isTRUE(by_x)) {
+      width <- reset_width(w, diff(panel_params$x.range))
     } else {
-      width <- widthSpline(data$width / scale, unit, d = d, rep = rep)
+      width <- reset_width(w, diff(panel_params$y.range))
     }
 
     coords <- coord$transform(data, panel_params)
