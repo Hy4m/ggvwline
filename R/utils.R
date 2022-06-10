@@ -40,30 +40,30 @@ unit_value <- function(x) {
 
 #' @noRd
 reset_width <- function(width, range) {
-  if (inherits(width, "widthSpline")) {
+  if (inherits(width, "widthSpec")) {
     lv <- unit_value(width$left)
-    lr <- unit_value(width$right)
+    rv <- unit_value(width$right)
     lu <- grid::unitType(width$left)
     ru <- grid::unitType(width$right)
-    lv[which(lu) == "native"] <- lv[which(lu) == "native"] / range
-    rv[which(ru) == "native"] <- rv[which(ru) == "native"] / range
+    lv[which(lu == "native")] <- lv[which(lu == "native")] / range
+    rv[which(ru == "native")] <- rv[which(ru == "native")] / range
     width <- widthSpec(list(left = unit(lv, lu),
                             right = unit(rv, ru)))
-  } else if (inherits(width, "BezierWidth") || inherits(width, "widthSpec")) {
+  } else if (inherits(width, "BezierWidth") || inherits(width, "widthSpline")) {
     v <- unit_value(width$w)
     u <- grid::unitType(width$w)
-    v[which(u) == "native"] <- v[which(u) == "native"] / range
+    v[which(u == "native")] <- v[which(u == "native")] / range
     width$w <- unit(v, u)
     if (grid::is.unit(width$d)) {
       dv <- unit_value(width$d)
       du <- grid::unitType(width$d)
-      dv[which(du) == "native"] <- dv[which(du) == "native"] / range
+      dv[which(du == "native")] <- dv[which(du == "native")] / range
       width$d <- dv
     }
   } else {
     v <- unit_value(width)
     u <- grid::unitType(width)
-    v[which(u) == "native"] <- v[which(u) == "native"] / range
+    v[which(u == "native")] <- v[which(u == "native")] / range
     width <- unit(v, u)
   }
   width

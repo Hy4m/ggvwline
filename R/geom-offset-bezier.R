@@ -102,7 +102,7 @@ GeomOffsetBezier <- ggproto(
       w <- widthSpline(data$width, default.units = width_units, shape = shape,
                        d = d, rep = rep)
     }
-    if(!inherits(w, "widthSpline") || !inherits(w, "BezierWidth")) {
+    if(!inherits(w, "widthSpline") && !inherits(w, "BezierWidth")) {
       stop("'width' should be created with `widthSpline()` or `BezierWidth()`.",
            call. = FALSE)
     }

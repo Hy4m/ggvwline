@@ -90,9 +90,10 @@ GeomVwXspline <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
-  draw_panel = function(self, data, panel_params, coord, shape = 1, open = TRUE,
-                        repEnds = TRUE, angle = "perp", lineend = "butt",
-                        mitrelimit = 4, width_units = "mm", by_x = FALSE, na.rm = FALSE) {
+  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = 1,
+                        open = TRUE, repEnds = TRUE, angle = "perp",
+                        lineend = "butt", mitrelimit = 4, width_units = "mm",
+                        by_x = FALSE, na.rm = FALSE) {
     if(empty(data) || nrow(data) < 3) {
       return(ggplot2::zeroGrob())
     }

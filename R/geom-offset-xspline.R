@@ -94,7 +94,7 @@ GeomOffsetXspline <- ggproto(
   draw_panel = function(self, data, panel_params, coord, w = NULL, shape = -1,
                         open = TRUE, repEnds = TRUE, lineend = "butt",
                         mitrelimit = 4, d = NULL, rep = FALSE,
-                        width_units = "mm", na.rm = FALSE) {
+                        width_units = "mm", by_x = FALSE, na.rm = FALSE) {
     if(empty(data) || nrow(data) < 2) {
       return(ggplot2::zeroGrob())
     }

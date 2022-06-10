@@ -42,7 +42,7 @@ geom_vwline <- function(mapping = NULL,
                         stat = "identity",
                         position = "identity",
                         ...,
-                        width_units = NULL,
+                        width_units = "mm",
                         open = TRUE,
                         linejoin = "round",
                         lineend = "butt",
@@ -104,10 +104,10 @@ GeomVwline <- ggproto(
 
     if (is.null(w)) {
       if(!all(is.na(data$left)) && !all(is.na(data$left))) {
-        width <- widthSpec(list(left = data$left, right = data$right),
-                           default.units = width_units)
+        w <- widthSpec(x = list(left = unit(data$left, width_units),
+                                right = unit(data$right, width_units)))
       } else {
-        width <- widthSpec(data$width, default.units = width_units)
+        w <- widthSpec(x = unit(data$width, width_units))
       }
     }
     if(!inherits(w, "widthSpec")) {

@@ -83,9 +83,9 @@ GeomVwcurve <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
-  draw_panel = function(self, data, panel_params, coord, open = TRUE,
+  draw_panel = function(self, data, panel_params, coord, w = NULL, open = TRUE,
                         angle = "perp", lineend = "butt", mitrelimit = 4,
-                        width_unit = "mm", by_x = FALSE, na.rm = FALSE) {
+                        width_units = "mm", by_x = FALSE, na.rm = FALSE) {
     if(empty(data) || nrow(data) < 2) {
       return(ggplot2::zeroGrob())
     }
@@ -105,7 +105,7 @@ GeomVwcurve <- ggproto(
 
     ggname(
       "geom_vwcurve",
-      vwline::vwcurveGrob(x            = coords$x,
+      vwline::vwcurveGrob(x             = coords$x,
                           y             = coords$y,
                           w             = width,
                           default.units = "native",

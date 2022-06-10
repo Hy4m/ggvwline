@@ -12,7 +12,7 @@ geom_vwline(
   stat = "identity",
   position = "identity",
   ...,
-  width_units = NULL,
+  width_units = "mm",
   open = TRUE,
   linejoin = "round",
   lineend = "butt",
