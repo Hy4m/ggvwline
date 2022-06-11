@@ -90,7 +90,7 @@ GeomVwXspline <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
-  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = 1,
+  draw_group = function(self, data, panel_params, coord, w = NULL, shape = 1,
                         open = TRUE, repEnds = TRUE, angle = "perp",
                         lineend = "butt", mitrelimit = 4, width_units = "mm",
                         by_x = FALSE, na.rm = FALSE) {
@@ -100,6 +100,15 @@ GeomVwXspline <- ggproto(
 
     if (is.null(w)) {
       w <- unit(data$width, units = width_units)
+    } else {
+      if (!is.numeric(w) && !is.unit(w)) {
+        stop("`width` should be a unit object or numeric object.", call. = FALSE)
+      }
+      if (is.numeric(w)) {
+        w <- unit(rep_len(w, nrow(data)), units = width_units)
+      } else {
+        w <- grid::unit.rep(w, length.out = nrow(data))
+      }
     }
 
     if (isTRUE(by_x)) {

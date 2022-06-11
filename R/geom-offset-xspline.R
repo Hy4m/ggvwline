@@ -91,7 +91,7 @@ GeomOffsetXspline <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
-  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = -1,
+  draw_group = function(self, data, panel_params, coord, w = NULL, shape = -1,
                         open = TRUE, repEnds = TRUE, lineend = "butt",
                         mitrelimit = 4, d = NULL, rep = FALSE,
                         width_units = "mm", by_x = FALSE, na.rm = FALSE) {
@@ -102,6 +102,11 @@ GeomOffsetXspline <- ggproto(
     if (is.null(w)) {
       w <- widthSpline(data$width, default.units = width_units, shape = shape,
                        d = d, rep = rep)
+    } else {
+      if (is.numeric(w)) {
+        w <- widthSpline(rep_len(w, nrow(data)), default.units = width_units,
+                         shape = shape, d = d, rep = rep)
+      }
     }
     if(!inherits(w, "widthSpline")) {
       stop("'width' should be created with `widthSpline()`.", call. = FALSE)

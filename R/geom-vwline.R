@@ -94,7 +94,7 @@ GeomVwline <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
-  draw_panel = function(self, data, panel_params, coord, w = NULL, open = TRUE,
+  draw_group = function(self, data, panel_params, coord, w = NULL, open = TRUE,
                         linejoin = "round", lineend = "butt", mitrelimit = 4,
                         stepWidth = FALSE, width_units = "mm", by_x = FALSE,
                         na.rm = FALSE) {
@@ -108,6 +108,10 @@ GeomVwline <- ggproto(
                                 right = unit(data$right, width_units)))
       } else {
         w <- widthSpec(x = unit(data$width, width_units))
+      }
+    } else {
+      if (is.numeric(w)) {
+        w <- widthSpec(x = unit(rep_len(w, nrow(data)), width_units))
       }
     }
     if(!inherits(w, "widthSpec")) {
