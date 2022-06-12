@@ -30,6 +30,7 @@ library(ggplot2)
 tt <- seq(0, 2 * pi, length.out = 102)[-c(1, 102)]
 dd <- data.frame(x = cos(tt),
                  y = sin(tt),
+                 w = runif(100, 10, 30),
                  g = rep(LETTERS[1:4], each = 25))
 
 ggplot(dd, aes(x, y, fill = g)) +
@@ -38,3 +39,11 @@ ggplot(dd, aes(x, y, fill = g)) +
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
+
+``` r
+ggplot(dd, aes(x, y, fill = g)) +
+  geom_offset_xspline(aes(width = w)) +
+  coord_fixed()
+```
+
+<img src="man/figures/README-example-2.png" width="100%" />
