@@ -10,7 +10,7 @@ any_is_na <- function(x) any(is.na(x))
 
 #' @noRd
 empty <- function(df) {
-  is.null(df) || nrow(df) == 0 || ncol(df) == 0
+  is.null(df) || length(df) == 0 || nrow(df) == 0 || ncol(df) == 0
 }
 
 #' @noRd
