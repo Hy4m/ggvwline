@@ -47,3 +47,20 @@ ggplot(dd, aes(x, y, fill = g)) +
 ```
 
 <img src="man/figures/README-example-2.png" width="100%" />
+
+``` r
+dd2 <- data.frame(x = 1,
+                 y = 1:10,
+                 xend = 2:11,
+                 yend = 3:12,
+                 width = runif(10, 3, 20),
+                 group = LETTERS[1:10])
+
+ggplot(dd2, aes(x, y, xend = xend, yend = yend)) +
+  geom_vwdiagonal(aes(width = stat(index), fill = group),
+                  width_units = "cm",
+                  lineend = "round",
+                  alpha = 0.5)
+```
+
+<img src="man/figures/README-example-3.png" width="100%" />
