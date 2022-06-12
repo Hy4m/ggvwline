@@ -69,7 +69,7 @@ geom_vwcurve <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_vwcurve
+#' @rdname ggvwline-extensions
 #' @format NULL
 #' @usage NULL
 #' @export

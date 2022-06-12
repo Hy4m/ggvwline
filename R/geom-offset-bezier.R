@@ -77,7 +77,7 @@ geom_offset_bezier <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_offset_bezier
+#' @rdname ggvwline-extensions
 #' @format NULL
 #' @usage NULL
 #' @export

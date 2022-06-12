@@ -77,7 +77,7 @@ geom_offset_xspline <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_offset_xspline
+#' @rdname ggvwline-extensions
 #' @format NULL
 #' @usage NULL
 #' @export

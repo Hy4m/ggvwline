@@ -78,7 +78,7 @@ geom_vwline <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_vwline
+#' @rdname ggvwline-extensions
 #' @format NULL
 #' @usage NULL
 #' @export

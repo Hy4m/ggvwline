@@ -76,7 +76,7 @@ geom_vwxspline <- function(mapping = NULL,
   )
 }
 
-#' @rdname geom_vwxspline
+#' @rdname ggvwline-extensions
 #' @format NULL
 #' @usage NULL
 #' @export
