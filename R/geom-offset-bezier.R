@@ -29,6 +29,7 @@
 #' @importFrom vwline offsetBezierGrob
 #' @importFrom vwline BezierWidth
 #' @importFrom gridBezier nSteps
+#' @importFrom grid gList
 #' @rdname geom_offset_bezier
 #' @export
 geom_offset_bezier <- function(mapping = NULL,
@@ -90,6 +91,24 @@ GeomOffsetBezier <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
+  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = 1,
+                        stepFn = nSteps(100), open = TRUE, lineend = "butt",
+                        linejoin = "round", mitrelimit = 4, width_units = "mm",
+                        d = NULL, rep = FALSE, by_x = FALSE, na.rm = FALSE) {
+    groups <- split(data, factor(data$group))
+    grobs <- lapply(groups, function(group) {
+      self$draw_group(group, panel_params, coord, w = w, shape = shape,
+                      stepFn = stepFn, open = open, lineend = lineend,
+                      linejoin = linejoin, mitrelimit = mitrelimit,
+                      width_units = width_units, d = d, rep = rep, by_x = by_x,
+                      na.rm = na.rm)
+    })
+
+    ggname("geom_offset_bezier", grid::gTree(
+      children = do.call("gList", grobs)
+    ))
+  },
+
   draw_group = function(self, data, panel_params, coord, w = NULL, shape = 1,
                         stepFn = nSteps(100), open = TRUE, lineend = "butt",
                         linejoin = "round", mitrelimit = 4, width_units = "mm",
@@ -97,7 +116,6 @@ GeomOffsetBezier <- ggproto(
     if(empty(data) || nrow(data) < 4) {
       return(ggplot2::zeroGrob())
     }
-
     if (is.null(w)) {
       w <- widthSpline(data$width, default.units = width_units, shape = shape,
                        d = d, rep = rep)

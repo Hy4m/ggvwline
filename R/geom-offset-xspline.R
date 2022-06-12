@@ -91,6 +91,23 @@ GeomOffsetXspline <- ggproto(
                     size     = 0.5),
   required_aes = c("x", "y"),
 
+  draw_panel = function(self, data, panel_params, coord, w = NULL, shape = -1,
+                        open = TRUE, repEnds = TRUE, lineend = "butt",
+                        mitrelimit = 4, d = NULL, rep = FALSE,
+                        width_units = "mm", by_x = FALSE, na.rm = FALSE) {
+    groups <- split(data, factor(data$group))
+    grobs <- lapply(groups, function(group) {
+      self$draw_group(group, panel_params, coord, w = w, shape = shape,
+                      open = open, repEnds = repEnds, lineend = lineend,
+                      mitrelimit = mitrelimit, d = d, rep = rep,
+                      width_units = width_units, by_x = by_x, na.rm = na.rm)
+    })
+
+    ggname("geom_offset_xspline", grid::gTree(
+      children = do.call("gList", grobs)
+    ))
+  },
+
   draw_group = function(self, data, panel_params, coord, w = NULL, shape = -1,
                         open = TRUE, repEnds = TRUE, lineend = "butt",
                         mitrelimit = 4, d = NULL, rep = FALSE,
