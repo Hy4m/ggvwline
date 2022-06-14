@@ -89,3 +89,11 @@ A diagonal is a bezier curve where the control points are moved
 perpendicularly towards the center in either the x or y direction a fixed
 amount. And this function allows each curve to have a different width.
 }
+\examples{
+library(ggplot2)
+dd <- data.frame(x = 1,
+                 y = 1:10,
+                 xend = 2:11,
+                 yend = 3:12)
+ggplot(dd, aes(x, y, xend = xend, yend = yend)) + geom_vwdiagonal()
+}

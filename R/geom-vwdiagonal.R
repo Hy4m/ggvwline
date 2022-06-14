@@ -6,6 +6,13 @@
 #' @importFrom ggforce StatDiagonal
 #' @rdname geom_vwdiagonal
 #' @export
+#' @examples
+#' library(ggplot2)
+#' dd <- data.frame(x = 1,
+#'                  y = 1:10,
+#'                  xend = 2:11,
+#'                  yend = 3:12)
+#' ggplot(dd, aes(x, y, xend = xend, yend = yend)) + geom_vwdiagonal()
 geom_vwdiagonal <- function(mapping = NULL,
                             data = NULL,
                             stat = "vwdiagonal",
