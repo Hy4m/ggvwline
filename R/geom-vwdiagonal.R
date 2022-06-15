@@ -28,7 +28,7 @@ geom_vwdiagonal <- function(mapping = NULL,
     geom <- params$geom
     params <- params[setdiff(names(params), "geom")]
   } else {
-    geom = GeomVwcurve
+    geom <- GeomVwcurve
   }
   layer(
     data = data,

@@ -18,7 +18,7 @@ geom_vwarc <- function(mapping = NULL,
     geom <- params$geom
     params <- params[setdiff(names(params), "geom")]
   } else {
-    geom = GeomVwcurve
+    geom <- GeomVwcurve
   }
   layer(
     data = data,
@@ -28,10 +28,12 @@ geom_vwarc <- function(mapping = NULL,
     position = position,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
-    params = list(
-      n = n,
-      na.rm = na.rm,
-      ...)
+    params = c(
+      list(
+        na.rm = na.rm,
+        n = n),
+      params
+    )
   )
 }
 #' @rdname ggvwline-extensions
